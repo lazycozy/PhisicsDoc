@@ -1,0 +1,132 @@
+@startuml
+Alice <- Bob
+@enduml
+
+@startuml
+main -> SnipetJoint: snipetMain
+activate SnipetJoint
+SnipetJoint -> SnipetJointRender : renderLoop
+activate SnipetJointRender
+note right of SnipetJointRender
+	sCamera = new Snippets::Camera(PxVec3(50.0f, 50.0f, 50.0f), PxVec3(-0.6f,-0.2f,-0.7f));
+
+	Snippets::setupDefaultWindow("PhysX Snippet Joint");
+	Snippets::setupDefaultRenderState();
+
+	glutIdleFunc(idleCallback);
+	glutDisplayFunc(renderCallback);
+	glutKeyboardFunc(keyboardCallback);
+	glutMouseFunc(mouseCallback);
+	glutMotionFunc(motionCallback);
+	motionCallback(0,0);
+
+	atexit(exitCallback);
+
+	initPhysics(true);
+	glutMainLoop();
+end note
+@enduml
+
+@startuml sequence of renderCallback
+glut -> SnipetJointRender : renderCallback
+activate SnipetJointRender
+SnipetJointRender->SnipetJoint : stepPhysiccs
+activate SnipetJoint
+  SnipetJoint->PxScene : simulate
+  activate PxScene
+  deactivate PxScene
+  SnipetJoint->PxScene : fetchResults
+  activate PxScene
+  deactivate PxScene
+deactivate SnipetJoint
+
+SnipetJointRender->SnipetJointRender : startRender
+note left of SnipetJointRender
+Setup GL projection matrix
+end note
+activate SnipetJointRender
+deactivate SnipetJointRender
+
+SnipetJointRender->NpPhysics : getScene
+activate NpPhysics
+SnipetJointRender<--NpPhysics : a pointer to PxScene
+deactivate NpPhysics
+
+SnipetJointRender->PxScene : getNbActors
+activate PxScene
+SnipetJointRender<--PxScene : the number of PxRigidActor
+deactivate PxScene
+
+SnipetJointRender->PxScene : getActors
+activate PxScene
+SnipetJointRender<--PxScene : a vecotr of PxRigidActor
+deactivate PxScene
+
+SnipetJointRender->SnipetJointRender : renderActors
+activate SnipetJointRender
+loop the number of Actor
+
+SnipetJointRender->PxRigidActor:getNbShapes
+activate PxRigidActor
+SnipetJointRender<--PxRigidActor: the number of Shape
+deactivate PxRigidActor
+
+SnipetJointRender->PxRigidActor:getNbShapes
+activate PxRigidActor
+SnipetJointRender<--PxRigidActor: an array of Shape
+deactivate PxRigidActor
+
+loop the number of Shape
+SnipetJointRender->PxShape: getGeometry
+activate PxShape
+SnipetJointRender<--PxShape: PxGeometryHolder
+deactivate PxShape
+SnipetJointRender->SnipetJointRender : renderGeometryHolder
+activate SnipetJointRender
+note left of SnipetJointRender
+Drawing geometries with the OpenGL
+end note
+deactivate SnipetJointRender
+end
+end
+deactivate SnipetJointRender
+
+SnipetJointRender->SnipetJointRender : fnishRender
+activate SnipetJointRender
+note left of SnipetJointRender
+Swap drawing buffer
+end note
+deactivate SnipetJointRender
+
+@enduml
+
+@startuml class diagram
+class PxGeometry {
+    geometryType : PxGeometryType
+}
+class PxGeometryHolder {
+
+}
+class NpShape {
+    PxGeometryHolder getGeometry() const
+}
+class PxRigidActor {
+    getShapes()
+}
+PxBase<|--PxActor
+PxActor<|--PxRigidActor
+PxRigidActor<|--PxRigidStatic
+PxRigidActor<|--PxRigidBody
+PxRigidBody<|--PxRigidDynamic
+PxRigidBody<|--PxArticulationLink
+PxShape<|--NpShape
+PxPhysics<|--NpPhysics
+PxGeometryHolder*--PxGeometry
+PxGeometry<|--PxBoxGeometry
+PxGeometry<|--PxSphereGeometry
+PxGeometry<|--PxCapsuleGeometry
+PxGeometry<|--PxPlaneGeometry
+PxGeometry<|--PxConvexMeshGeometry
+PxGeometry<|--PxTriangleMeshGeometry
+PxGeometry<|--PxHeightFieldGeometry
+@enduml
