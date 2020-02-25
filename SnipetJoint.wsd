@@ -107,20 +107,55 @@ class PxGeometry {
 class PxGeometryHolder {
 
 }
+class PxPhysics {
+	PxRigidStatic* createRigidStatic()
+	PxRigidDynamic* createRigidDynamic()
+	PxShape* createShape()
+}
+
 class NpShape {
     PxGeometryHolder getGeometry() const
 }
+
+class PxScene <<interface>> {
+	void addActor()
+	void addActors()
+}
+
+class NpFactory {
+	NpShape* createShape()
+}
+class NpScene {
+	void addActor()
+}
+class NpPhysics {
+	static PxPhysics* createInstance()
+	PxScene* createScene()
+	PxShape* createShape()
+
+}
+class PxRigidDynamic {
+
+}
 class PxRigidActor {
     getShapes()
+	bool attachShape(PxShape& shape)
 }
 PxBase<|--PxActor
 PxActor<|--PxRigidActor
+PxActor-PxScene
+PxScene-PxPhysics
 PxRigidActor<|--PxRigidStatic
 PxRigidActor<|--PxRigidBody
+PxRigidActor-PxShape
 PxRigidBody<|--PxRigidDynamic
 PxRigidBody<|--PxArticulationLink
 PxShape<|--NpShape
+PxShape-PxGeometry
 PxPhysics<|--NpPhysics
+PxPhysics-PxRigidStatic
+PxPhysics-PxRigidDynamic
+PxPhysics-PxShape
 PxGeometryHolder*--PxGeometry
 PxGeometry<|--PxBoxGeometry
 PxGeometry<|--PxSphereGeometry
